@@ -22,8 +22,8 @@ export default function Ajustes() {
       </Section>
       <Section>
         <Row emoji="👛" title="Cuentas" onPress={() => router.push('/ajustes/cuentas')} />
-        <Row emoji="🧩" title="Grupos" />
-        <Row emoji="🏷️" title="Categorías" />
+        <Row emoji="🧩" title="Grupos" onPress={() => router.push('/ajustes/grupos')} />
+        <Row emoji="🏷️" title="Categorías" onPress={() => router.push('/ajustes/categorias')} />
       </Section>
       <Section>
         <Row title="Cerrar sesión" destructive onPress={signOut} />

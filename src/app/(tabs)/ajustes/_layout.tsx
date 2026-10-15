@@ -18,6 +18,10 @@ export default function AjustesLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="cuentas" options={{ title: 'Cuentas' }} />
       <Stack.Screen name="cuenta" options={{ title: 'Cuenta' }} />
+      <Stack.Screen name="grupos" options={{ title: 'Grupos' }} />
+      <Stack.Screen name="grupo" options={{ title: 'Grupo' }} />
+      <Stack.Screen name="categorias" options={{ title: 'Categorías' }} />
+      <Stack.Screen name="categoria" options={{ title: 'Categoría' }} />
     </Stack>
   );
 }
