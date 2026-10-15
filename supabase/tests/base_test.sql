@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(14);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('11111111-1111-1111-1111-111111111111', 'ana@test.com', '{"name":"Ana"}'),
@@ -26,6 +26,15 @@ select throws_ok(
 select throws_ok(
   $$ insert into public.groups (name, allocation_type, allocation_value) values ('X', 'percent', 101) $$,
   '23514', null, 'un porcentaje mayor a 100 falla');
+select throws_ok(
+  $$ update public.profiles set main_currency = null $$,
+  '42501', null, 'el usuario no puede borrar su moneda principal para repetir el onboarding');
+select lives_ok(
+  $$ update public.profiles set name = 'Ana María' $$,
+  'el usuario sí puede cambiar su nombre');
+select throws_ok(
+  $$ insert into public.accounts (name, type, currency) values ('X', 'cash', 'XYZ') $$,
+  '23514', null, 'una moneda no soportada falla');
 
 -- Guardar el id de un grupo de Ana para intentar usarlo como Beto
 reset role;

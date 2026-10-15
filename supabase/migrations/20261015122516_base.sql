@@ -2,7 +2,7 @@
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   name text not null default '',
-  main_currency text check (main_currency ~ '^[A-Z]{3}$'),
+  main_currency text check (main_currency in ('COP', 'USD', 'EUR', 'MXN')),
   created_at timestamptz not null default now()
 );
 
@@ -23,7 +23,7 @@ create table public.accounts (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   name text not null check (length(btrim(name)) between 1 and 40),
   type text not null check (type in ('cash', 'bank', 'card')),
-  currency text not null check (currency ~ '^[A-Z]{3}$'),
+  currency text not null check (currency in ('COP', 'USD', 'EUR', 'MXN')),
   initial_balance bigint not null default 0,
   created_at timestamptz not null default now()
 );
@@ -72,17 +72,23 @@ create policy "own rows" on public.groups for all to authenticated
 create policy "own rows" on public.categories for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
-grant select, update on public.profiles to authenticated;
+-- Supabase da todos los permisos por defecto; dejamos solo lo necesario.
+revoke all on public.profiles, public.accounts, public.groups, public.categories from anon, authenticated;
+grant select on public.profiles to authenticated;
+grant update (name) on public.profiles to authenticated; -- main_currency solo vía complete_onboarding
 grant select, insert, update, delete on public.accounts, public.groups, public.categories to authenticated;
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
 
--- Primer uso: todo o nada, y solo una vez
+-- Primer uso: todo o nada, y solo una vez.
+-- SECURITY DEFINER porque el usuario no puede escribir main_currency directamente;
+-- todo se limita a auth.uid() (las filas nuevas toman user_id = auth.uid() por defecto).
 create function public.complete_onboarding(
   p_main_currency text,
   p_account_name text,
   p_account_type text,
   p_initial_balance bigint
 ) returns void
-language plpgsql security invoker set search_path = '' as $$
+language plpgsql security definer set search_path = '' as $$
 declare
   v_current text;
   v_fijos uuid;

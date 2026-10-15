@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { errorMessage } from '@/domain/errors';
 import type { Tables } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
@@ -9,6 +10,7 @@ type AuthState = {
   status: Status;
   session: Session | null;
   profile: Profile | null;
+  error: string | null;
   refreshProfile: () => Promise<void>;
 };
 
@@ -18,24 +20,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const userId = useRef<string | null>(null);
 
   const loadProfile = useCallback(async (s: Session | null) => {
-    setFailed(false);
+    setError(null);
     if (!s) return setProfile(null);
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', s.user.id).single();
-    if (error) setFailed(true);
+    const { data, error: e } = await supabase.from('profiles').select('*').eq('id', s.user.id).single();
+    if (e) setError(errorMessage(e));
     setProfile(data);
   }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
+      userId.current = data.session?.user.id ?? null;
       await loadProfile(data.session);
       setSessionLoaded(true);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
+      // Solo recarga el perfil si cambió el usuario (no en cada refresco de token).
+      const id = s?.user.id ?? null;
+      if (id === userId.current) return;
+      userId.current = id;
       // Supabase recomienda no llamar a la API dentro del callback directamente.
       setTimeout(() => loadProfile(s), 0);
     });
@@ -46,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ? 'loading'
     : !session
       ? 'signedOut'
-      : failed
+      : error
         ? 'error'
         : profile?.id !== session.user.id
           ? 'loading'
@@ -57,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshProfile = useCallback(() => loadProfile(session), [loadProfile, session]);
 
   return (
-    <AuthContext.Provider value={{ status, session, profile, refreshProfile }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ status, session, profile, error, refreshProfile }}>{children}</AuthContext.Provider>
   );
 }
 

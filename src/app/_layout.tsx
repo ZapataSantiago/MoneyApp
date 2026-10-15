@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
+import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/theme/colors';
 import { AppText } from '@/ui/AppText';
 import { Button } from '@/ui/Button';
@@ -18,7 +19,7 @@ export default function RootLayout() {
 }
 
 function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
-  const { status, refreshProfile } = useAuth();
+  const { status, error, refreshProfile } = useAuth();
   const c = useTheme();
 
   if (!fontsLoaded || status === 'loading') {
@@ -32,11 +33,10 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   if (status === 'error') {
     return (
       <View style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 16, backgroundColor: c.background }}>
-        <AppText variant="title" style={{ textAlign: 'center' }}>📡 Sin conexión</AppText>
-        <AppText color="secondary" style={{ textAlign: 'center' }}>
-          No pudimos cargar tu perfil. Revisa tu internet.
-        </AppText>
+        <AppText variant="title" style={{ textAlign: 'center' }}>📡 No pudimos cargar tu perfil</AppText>
+        <AppText color="secondary" style={{ textAlign: 'center' }}>{error}</AppText>
         <Button title="Reintentar" onPress={refreshProfile} />
+        <Button title="Cerrar sesión" variant="plain" onPress={() => supabase.auth.signOut()} />
       </View>
     );
   }
