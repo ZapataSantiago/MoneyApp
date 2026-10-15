@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { Alert } from 'react-native';
 import { useAuth } from '@/auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
@@ -20,7 +21,7 @@ export default function Ajustes() {
         <Row emoji="🙂" title={profile?.name || 'Sin nombre'} detail={session?.user.email} />
       </Section>
       <Section>
-        <Row emoji="👛" title="Cuentas" />
+        <Row emoji="👛" title="Cuentas" onPress={() => router.push('/ajustes/cuentas')} />
         <Row emoji="🧩" title="Grupos" />
         <Row emoji="🏷️" title="Categorías" />
       </Section>

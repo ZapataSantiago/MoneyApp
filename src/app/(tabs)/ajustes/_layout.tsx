@@ -16,6 +16,8 @@ export default function AjustesLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="cuentas" options={{ title: 'Cuentas' }} />
+      <Stack.Screen name="cuenta" options={{ title: 'Cuenta' }} />
     </Stack>
   );
 }
