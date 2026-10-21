@@ -25,5 +25,6 @@ export async function saveCategory(input: CategoryInput, id?: string): Promise<v
 
 export async function deleteCategory(id: string): Promise<void> {
   const { error } = await supabase.from('categories').delete().eq('id', id);
+  if (error?.code === '23503') throw new Error('in_use'); // tiene movimientos
   if (error) throw error;
 }

@@ -3,6 +3,7 @@ import {
   validateCredentials,
   validateEmoji,
   validateGroupAllocation,
+  validateAmount,
   validateName,
 } from '@/domain/validation';
 
@@ -59,4 +60,18 @@ describe('validateGroupAllocation', () => {
     expect(validateGroupAllocation({ allocation_type: 'amount', allocation_value: -1 }, [])).toBe(
       'El monto no puede ser negativo',
     ));
+});
+
+describe('validateAmount', () => {
+  it('exige un monto', () => expect(validateAmount(null)).toBe('Escribe un monto válido'));
+  it('rechaza cero y negativos', () => {
+    expect(validateAmount(0)).toBe('El monto debe ser mayor a 0');
+    expect(validateAmount(-5)).toBe('El monto debe ser mayor a 0');
+  });
+  it('rechaza montos absurdos', () =>
+    expect(validateAmount(10 ** 12 + 1)).toBe('El monto es demasiado grande'));
+  it('acepta montos normales y el máximo', () => {
+    expect(validateAmount(25000)).toBeNull();
+    expect(validateAmount(10 ** 12)).toBeNull();
+  });
 });

@@ -18,6 +18,15 @@ export function validateEmoji(emoji: string): string | null {
   return null;
 }
 
+export const MAX_AMOUNT = 10 ** 12; // igual al límite de la tabla transactions
+
+export function validateAmount(minor: number | null): string | null {
+  if (minor === null) return 'Escribe un monto válido';
+  if (minor <= 0) return 'El monto debe ser mayor a 0';
+  if (minor > MAX_AMOUNT) return 'El monto es demasiado grande';
+  return null;
+}
+
 export type GroupAllocation = {
   id?: string;
   allocation_type: string; // 'percent' | 'amount'

@@ -85,10 +85,50 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"transactions": {
+                  Row: {
+                    "account_id": string,"amount": number,"category_id": string,"created_at": string,"date": string,"id": string,"kind": string,"note": string,"source": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"amount": number,"category_id": string,"created_at"?: string,"date": string,"id"?: string,"kind": string,"note"?: string,"source"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "account_id"?: string,"amount"?: number,"category_id"?: string,"created_at"?: string,"date"?: string,"id"?: string,"kind"?: string,"note"?: string,"source"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "transactions_account_id_user_id_fkey"
+      columns: ["account_id","user_id"]
+isOneToOne: false
+      referencedRelation: "account_balances"
+      referencedColumns: ["account_id","user_id"]
+    },{
+      foreignKeyName: "transactions_account_id_user_id_fkey"
+      columns: ["account_id","user_id"]
+isOneToOne: false
+      referencedRelation: "accounts"
+      referencedColumns: ["id","user_id"]
+    },{
+      foreignKeyName: "transactions_category_id_user_id_kind_fkey"
+      columns: ["category_id","user_id","kind"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id","user_id","kind"]
+    }
+                  ]
                 }
           }
           Views: {
-            [_ in never]: never
+            "account_balances": {
+                  Row: {
+                    "account_id": string | null,"balance": number | null,"currency": string | null,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                }
           }
           Functions: {
             "complete_onboarding":

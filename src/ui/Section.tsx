@@ -15,10 +15,9 @@ export function Section({ title, footer, children }: { title?: string; footer?: 
       ) : null}
       <View style={{ backgroundColor: c.card, borderRadius: 16, overflow: 'hidden' }}>
         {rows.map((row, i) => (
-          <View
-            key={i}
-            style={i > 0 ? { borderTopWidth: 0.5, borderTopColor: c.separator, marginLeft: 16 } : undefined}
-          >
+          <View key={i}>
+            {/* Solo la línea va con sangría, como en iOS; la fila ocupa todo el ancho */}
+            {i > 0 ? <View style={{ height: 0.5, backgroundColor: c.separator, marginLeft: 16 }} /> : null}
             {row}
           </View>
         ))}

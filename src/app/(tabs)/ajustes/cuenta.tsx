@@ -1,6 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import { useAuth } from '@/auth/AuthProvider';
 import { deleteAccount, getAccount, saveAccount } from '@/data/accounts';
 import { ACCOUNT_TYPES, AccountType } from '@/domain/catalog';
@@ -10,6 +9,8 @@ import { validateName } from '@/domain/validation';
 import { AppText } from '@/ui/AppText';
 import { Button } from '@/ui/Button';
 import { ChoiceChips } from '@/ui/ChoiceChips';
+import { confirmAction, notify } from '@/ui/dialogs';
+import { goBack } from '@/ui/navigation';
 import { Screen } from '@/ui/Screen';
 import { TextField } from '@/ui/TextField';
 
@@ -35,7 +36,7 @@ export default function CuentaForm() {
         setCurrency(a.currency as CurrencyCode);
         setBalance(amountToInput(a.initial_balance, a.currency as CurrencyCode));
       })
-      .catch((e) => Alert.alert('No se pudo cargar', errorMessage(e)));
+      .catch((e) => notify('No se pudo cargar', errorMessage(e)));
   }, [id]);
 
   async function save() {
@@ -46,29 +47,21 @@ export default function CuentaForm() {
     setSaving(true);
     try {
       await saveAccount({ name: name.trim(), type, currency, initial_balance: amount! }, id);
-      router.back();
+      goBack('/ajustes');
     } catch (e) {
-      Alert.alert('No se pudo guardar', errorMessage(e));
+      notify('No se pudo guardar', errorMessage(e));
       setSaving(false);
     }
   }
 
-  function remove() {
-    Alert.alert('Eliminar cuenta', `¿Eliminar "${name}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteAccount(id!);
-            router.back();
-          } catch (e) {
-            Alert.alert('No se pudo eliminar', errorMessage(e));
-          }
-        },
-      },
-    ]);
+  async function remove() {
+    if (!(await confirmAction('Eliminar cuenta', `¿Eliminar "${name}"?`, 'Eliminar'))) return;
+    try {
+      await deleteAccount(id!);
+      goBack('/ajustes');
+    } catch (e) {
+      notify('No se pudo eliminar', errorMessage(e));
+    }
   }
 
   return (

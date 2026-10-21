@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { deleteCategory, getCategory, saveCategory } from '@/data/categories';
 import { Group, listGroups } from '@/data/groups';
 import { CATEGORY_COLORS } from '@/domain/catalog';
@@ -11,6 +11,8 @@ import { useTheme } from '@/theme/colors';
 import { AppText } from '@/ui/AppText';
 import { Button } from '@/ui/Button';
 import { ChoiceChips } from '@/ui/ChoiceChips';
+import { confirmAction, notify } from '@/ui/dialogs';
+import { goBack } from '@/ui/navigation';
 import { Screen } from '@/ui/Screen';
 import { TextField } from '@/ui/TextField';
 
@@ -33,7 +35,7 @@ export default function CategoriaForm() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    listGroups().then(setGroups).catch((e) => Alert.alert('No se pudo cargar', errorMessage(e)));
+    listGroups().then(setGroups).catch((e) => notify('No se pudo cargar', errorMessage(e)));
     if (!id) return;
     getCategory(id)
       .then((cat) => {
@@ -43,7 +45,7 @@ export default function CategoriaForm() {
         setColor(cat.color);
         setGroupId(cat.group_id);
       })
-      .catch((e) => Alert.alert('No se pudo cargar', errorMessage(e)));
+      .catch((e) => notify('No se pudo cargar', errorMessage(e)));
   }, [id]);
 
   async function save() {
@@ -60,29 +62,21 @@ export default function CategoriaForm() {
         { name: name.trim(), kind, emoji: emoji.trim(), color, group_id: kind === 'expense' ? groupId : null },
         id,
       );
-      router.back();
+      goBack('/ajustes');
     } catch (e) {
-      Alert.alert('No se pudo guardar', errorMessage(e));
+      notify('No se pudo guardar', errorMessage(e));
       setSaving(false);
     }
   }
 
-  function remove() {
-    Alert.alert('Eliminar categoría', `¿Eliminar "${name}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteCategory(id!);
-            router.back();
-          } catch (e) {
-            Alert.alert('No se pudo eliminar', errorMessage(e));
-          }
-        },
-      },
-    ]);
+  async function remove() {
+    if (!(await confirmAction('Eliminar categoría', `¿Eliminar "${name}"?`, 'Eliminar'))) return;
+    try {
+      await deleteCategory(id!);
+      goBack('/ajustes');
+    } catch (e) {
+      notify('No se pudo eliminar', errorMessage(e));
+    }
   }
 
   return (
@@ -101,7 +95,12 @@ export default function CategoriaForm() {
           <AppText style={{ fontSize: 36, lineHeight: 44 }}>{emoji || '❔'}</AppText>
         </View>
       </View>
-      <ChoiceChips options={KIND_OPTIONS} value={kind} onChange={setKind} />
+      {id ? (
+        // El tipo no se cambia al editar: los movimientos ya registrados dependen de él.
+        <AppText color="secondary">{KIND_OPTIONS.find((k) => k.value === kind)?.label}</AppText>
+      ) : (
+        <ChoiceChips options={KIND_OPTIONS} value={kind} onChange={setKind} />
+      )}
       <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Ej. Gimnasio" error={errors.name} />
       <TextField label="Emoji" value={emoji} onChangeText={setEmoji} placeholder="🏋️" error={errors.emoji} />
 

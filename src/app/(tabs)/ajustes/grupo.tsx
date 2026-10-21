@@ -1,6 +1,6 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Switch, View } from 'react-native';
+import { Switch, View } from 'react-native';
 import { useAuth } from '@/auth/AuthProvider';
 import { deleteGroup, getGroup, listGroups, saveGroup } from '@/data/groups';
 import { errorMessage } from '@/domain/errors';
@@ -10,6 +10,8 @@ import { useTheme } from '@/theme/colors';
 import { AppText } from '@/ui/AppText';
 import { Button } from '@/ui/Button';
 import { ChoiceChips } from '@/ui/ChoiceChips';
+import { confirmAction, notify } from '@/ui/dialogs';
+import { goBack } from '@/ui/navigation';
 import { Screen } from '@/ui/Screen';
 import { TextField } from '@/ui/TextField';
 
@@ -40,7 +42,7 @@ export default function GrupoForm() {
         setValue(g.allocation_type === 'percent' ? String(g.allocation_value) : amountToInput(g.allocation_value, currency));
         setIsFixed(g.is_fixed);
       })
-      .catch((e) => Alert.alert('No se pudo cargar', errorMessage(e)));
+      .catch((e) => notify('No se pudo cargar', errorMessage(e)));
   }, [id, currency]);
 
   async function save() {
@@ -65,29 +67,21 @@ export default function GrupoForm() {
         { name: name.trim(), allocation_type: allocationType, allocation_value: parsed!, is_fixed: isFixed },
         id,
       );
-      router.back();
+      goBack('/ajustes');
     } catch (e) {
-      Alert.alert('No se pudo guardar', errorMessage(e));
+      notify('No se pudo guardar', errorMessage(e));
       setSaving(false);
     }
   }
 
-  function remove() {
-    Alert.alert('Eliminar grupo', `Las categorías de "${name}" quedarán sin grupo.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteGroup(id!);
-            router.back();
-          } catch (e) {
-            Alert.alert('No se pudo eliminar', errorMessage(e));
-          }
-        },
-      },
-    ]);
+  async function remove() {
+    if (!(await confirmAction('Eliminar grupo', `Las categorías de "${name}" quedarán sin grupo.`, 'Eliminar'))) return;
+    try {
+      await deleteGroup(id!);
+      goBack('/ajustes');
+    } catch (e) {
+      notify('No se pudo eliminar', errorMessage(e));
+    }
   }
 
   return (
