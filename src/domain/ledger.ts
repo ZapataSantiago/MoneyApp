@@ -1,4 +1,5 @@
-export type MovementLite = { kind: 'expense' | 'income'; amount: number; category_id: string; date: string };
+// kind es string para aceptar las filas de Supabase tal cual; todo lo que no es 'income' es gasto.
+export type MovementLite = { kind: string; amount: number; category_id: string; date: string };
 export type CategoryLite = { id: string; group_id: string | null };
 export type GroupLite = { id: string; is_fixed: boolean };
 
