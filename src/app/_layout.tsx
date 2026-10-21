@@ -51,6 +51,16 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
       </Stack.Protected>
       <Stack.Protected guard={status === 'ready'}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="movimiento"
+          options={{
+            presentation: 'formSheet',
+            sheetAllowedDetents: [0.92],
+            sheetGrabberVisible: true,
+            sheetCornerRadius: 24,
+            headerShown: false,
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );
