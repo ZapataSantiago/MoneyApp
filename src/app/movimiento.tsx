@@ -2,7 +2,7 @@ import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/d
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, Pressable, TextInput, View } from 'react-native';
+import { Platform, Pressable, TextInput, View } from 'react-native';
 import { Account, listAccounts } from '@/data/accounts';
 import { Category, listCategories } from '@/data/categories';
 import { deleteTransaction, getTransaction, saveTransaction } from '@/data/transactions';
@@ -16,6 +16,8 @@ import { Button } from '@/ui/Button';
 import { CategoryPicker } from '@/ui/CategoryPicker';
 import { ChoiceChips } from '@/ui/ChoiceChips';
 import { EmptyState } from '@/ui/EmptyState';
+import { confirmAction, notify } from '@/ui/dialogs';
+import { goBack } from '@/ui/navigation';
 import { Screen } from '@/ui/Screen';
 import { TextField } from '@/ui/TextField';
 
@@ -62,7 +64,7 @@ export default function MovimientoSheet() {
           setAccountId(accs[0]?.id ?? null);
         }
       })
-      .catch((e) => Alert.alert('No se pudo cargar', errorMessage(e)));
+      .catch((e) => notify('No se pudo cargar', errorMessage(e)));
   }, [id]);
 
   const account = accounts?.find((a) => a.id === accountId);
@@ -98,29 +100,21 @@ export default function MovimientoSheet() {
         id,
       );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      goBack('/');
     } catch (e) {
-      Alert.alert('No se pudo guardar', errorMessage(e));
+      notify('No se pudo guardar', errorMessage(e));
       setSaving(false);
     }
   }
 
-  function remove() {
-    Alert.alert('Eliminar movimiento', '¿Seguro que quieres eliminarlo?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteTransaction(id!);
-            router.back();
-          } catch (e) {
-            Alert.alert('No se pudo eliminar', errorMessage(e));
-          }
-        },
-      },
-    ]);
+  async function remove() {
+    if (!(await confirmAction('Eliminar movimiento', '¿Seguro que quieres eliminarlo?', 'Eliminar'))) return;
+    try {
+      await deleteTransaction(id!);
+      goBack('/');
+    } catch (e) {
+      notify('No se pudo eliminar', errorMessage(e));
+    }
   }
 
   if (accounts && accounts.length === 0) {

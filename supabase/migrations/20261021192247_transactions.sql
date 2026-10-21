@@ -35,3 +35,17 @@ group by a.id;
 revoke all on public.transactions, public.account_balances from anon, authenticated;
 grant select, insert, update, delete on public.transactions to authenticated;
 grant select on public.account_balances to authenticated;
+
+-- Los montos dependen de la moneda (decimales): no se puede cambiar la moneda de una cuenta con movimientos
+create function public.prevent_currency_change() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  if new.currency <> old.currency and exists (select 1 from public.transactions where account_id = old.id) then
+    raise exception 'currency_locked';
+  end if;
+  return new;
+end $$;
+
+create trigger accounts_currency_locked
+  before update of currency on public.accounts
+  for each row execute function public.prevent_currency_change();

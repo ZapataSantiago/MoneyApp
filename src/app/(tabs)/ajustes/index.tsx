@@ -1,18 +1,15 @@
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
 import { useAuth } from '@/auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
+import { confirmAction } from '@/ui/dialogs';
 import { Screen } from '@/ui/Screen';
 import { Row, Section } from '@/ui/Section';
 
 export default function Ajustes() {
   const { profile, session } = useAuth();
 
-  function signOut() {
-    Alert.alert('Cerrar sesión', '¿Seguro que quieres salir?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: () => supabase.auth.signOut() },
-    ]);
+  async function signOut() {
+    if (await confirmAction('Cerrar sesión', '¿Seguro que quieres salir?', 'Salir')) supabase.auth.signOut();
   }
 
   return (

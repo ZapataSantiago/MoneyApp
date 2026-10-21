@@ -20,6 +20,10 @@ describe('errorMessage', () => {
     expect(errorMessage(new Error('in_use'))).toBe(
       'No se puede eliminar porque tiene movimientos. Cambia o elimina esos movimientos primero',
     ));
+  it('explica por qué no se puede cambiar la moneda', () =>
+    expect(errorMessage({ message: 'currency_locked' })).toBe(
+      'No puedes cambiar la moneda de una cuenta que ya tiene movimientos',
+    ));
   it('usa un mensaje genérico para lo desconocido', () => {
     expect(errorMessage({ code: 'otra_cosa', message: 'boom' })).toBe('Algo salió mal. Intenta de nuevo');
     expect(errorMessage(null)).toBe('Algo salió mal. Intenta de nuevo');

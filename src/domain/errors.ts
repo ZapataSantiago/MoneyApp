@@ -16,6 +16,8 @@ export function errorMessage(err: unknown): string {
   if (/network request failed|failed to fetch/i.test(msg))
     return 'Sin conexión. Revisa tu internet e intenta de nuevo';
   if (msg.includes('already_onboarded')) return 'Ya completaste la configuración inicial';
+  if (msg.includes('currency_locked'))
+    return 'No puedes cambiar la moneda de una cuenta que ya tiene movimientos';
   if (msg.includes('in_use'))
     return 'No se puede eliminar porque tiene movimientos. Cambia o elimina esos movimientos primero';
   return 'Algo salió mal. Intenta de nuevo';

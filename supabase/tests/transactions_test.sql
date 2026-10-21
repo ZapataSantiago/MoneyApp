@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(12);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('11111111-1111-1111-1111-111111111111', 'ana@test.com', '{"name":"Ana"}'),
@@ -48,6 +48,12 @@ select is(
 select throws_ok(
   $$ delete from public.accounts where id = current_setting('t.ana_acc')::uuid $$,
   '23503', null, 'no se puede borrar una cuenta con movimientos');
+select throws_ok(
+  $$ update public.accounts set currency = 'USD' where id = current_setting('t.ana_acc')::uuid $$,
+  'P0001', 'currency_locked', 'no se puede cambiar la moneda de una cuenta con movimientos');
+select lives_ok(
+  $$ update public.accounts set name = 'Billetera' where id = current_setting('t.ana_acc')::uuid $$,
+  'sí se puede renombrar una cuenta con movimientos');
 
 -- Actuar como Beto
 set local request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
