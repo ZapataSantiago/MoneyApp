@@ -16,6 +16,10 @@ describe('errorMessage', () => {
   });
   it('traduce el onboarding repetido', () =>
     expect(errorMessage({ message: 'already_onboarded' })).toBe('Ya completaste la configuración inicial'));
+  it('explica por qué no se puede eliminar algo con movimientos', () =>
+    expect(errorMessage(new Error('in_use'))).toBe(
+      'No se puede eliminar porque tiene movimientos. Cambia o elimina esos movimientos primero',
+    ));
   it('usa un mensaje genérico para lo desconocido', () => {
     expect(errorMessage({ code: 'otra_cosa', message: 'boom' })).toBe('Algo salió mal. Intenta de nuevo');
     expect(errorMessage(null)).toBe('Algo salió mal. Intenta de nuevo');
