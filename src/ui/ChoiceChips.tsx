@@ -25,13 +25,13 @@ export function ChoiceChips<T extends string>({ options, value, onChange }: Prop
               onChange(o.value);
             }}
             style={{
-              backgroundColor: selected ? c.accent : c.card,
+              backgroundColor: selected ? c.accentFill : c.card,
               borderRadius: 999,
               paddingHorizontal: 14,
               paddingVertical: 8,
             }}
           >
-            <AppText style={{ color: selected ? '#FFFFFF' : c.text }}>{o.label}</AppText>
+            <AppText style={{ color: selected ? c.onAccent : c.text }}>{o.label}</AppText>
           </Pressable>
         );
       })}

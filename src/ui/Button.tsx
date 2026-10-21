@@ -24,7 +24,7 @@ export function Button({ title, onPress, variant = 'filled', loading, disabled }
         onPress();
       }}
       style={({ pressed }) => ({
-        backgroundColor: filled ? c.accent : 'transparent',
+        backgroundColor: filled ? c.accentFill : 'transparent',
         borderRadius: 14,
         paddingVertical: 15,
         alignItems: 'center',
@@ -32,11 +32,11 @@ export function Button({ title, onPress, variant = 'filled', loading, disabled }
       })}
     >
       {loading ? (
-        <ActivityIndicator color={filled ? '#FFFFFF' : c.accent} />
+        <ActivityIndicator color={filled ? c.onAccent : c.accent} />
       ) : (
         <AppText
           variant="headline"
-          style={{ color: filled ? '#FFFFFF' : variant === 'destructive' ? c.red : c.accent }}
+          style={{ color: filled ? c.onAccent : variant === 'destructive' ? c.red : c.accent }}
         >
           {title}
         </AppText>
